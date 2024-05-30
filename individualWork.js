@@ -429,6 +429,7 @@ function setup() {
 }
 
 function draw() {
+  spectrum = fft.analyze();
   clear()
   background(3, 61, 94);
   push();
@@ -437,7 +438,6 @@ function draw() {
   originalImage();
   pop();
 
-  spectrum = fft.analyze();
   push();
   translate(size / 2, size / 2);
 
@@ -515,8 +515,8 @@ function originalImage() {
   ellipse(x, y + 30, 30, 30);
 
 
-for (i = 0; i < spectrum.length -50; i++) {//"-50" because there are only 78 circles in total
-  let x = map(spectrum[i], 0, 255, 0, 2);//how big the pattern will grow with the music
+for (i = 0; i < spectrum.length -50; i++) { //"-50" because there are only 78 circles in total
+  let x = map(spectrum[i], 0, 255, 0, 2); //how big the pattern will grow with the music
   fill(randomCircles[i].fill);
   ellipse(randomCircles[i].pattern[0], randomCircles[i].pattern[1], randomCircles[i].pattern[2] * x);
 }
