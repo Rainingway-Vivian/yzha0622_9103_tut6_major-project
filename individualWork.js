@@ -8,12 +8,44 @@ let smallCircleColors = [];
 // To store circles whose size and color can be modified together
 let randomCircles = [];
 
+let rotationAngle = 0;
+
+let song, fft, spectrum;
+let numBins = 128; // how many frequency bands we have
+let smoothing = 0.8;
+let button;
+
+// Load music
+function preload() {
+  song = loadSound("assets/valero.wav");
+}
+
+// Control the music to play or not
+function play_pause() {
+  if(song.isPlaying()) {
+    song.stop();
+  } else {
+    song.loop();
+  }
+}
+
 function setup() {
+
+  // Connect the code with the music
+  fft = new p5.FFT(smoothing, numBins);
+  song.connect(fft);
+
+  // Set the button to control the music
+  button = createButton("Day/Night");
+  button.mousePressed(play_pause);
+  
   // Calculate the size of the canvas
   size = Math.min(windowWidth, windowHeight);
   scaleFactor = Math.min(windowWidth, windowHeight) / 1024;
+
+  button.position((size - button.width) / 2, size - button.height - 10);
+
   createCanvas(size, size);
-  noLoop();
   noStroke();
   
   // Colors of the circles in the middle
@@ -397,11 +429,41 @@ function setup() {
 }
 
 function draw() {
-
+  clear()
+  background(3, 61, 94);
+  push();
   // Fit the image to the window size
   scale(scaleFactor);
   originalImage();
-  scale(1 / scaleFactor);
+  pop();
+
+  spectrum = fft.analyze();
+  push();
+  translate(size / 2, size / 2);
+
+  // Control the rotating animation
+  rotationAngle += 0.005; 
+  rotate(rotationAngle);
+
+  scale(scaleFactor);
+  let moonRadius = 100;
+  let offset = 45;
+  if(song.isPlaying()) {// DAY
+    fill(255, 165, 0);
+    ellipse(0, 350, moonRadius * 2);
+    fill(3, 61, 94);
+    ellipse(0 , 350, moonRadius * 1.9);
+    fill(255, 165, 0);
+    ellipse(0, 350, moonRadius * 1.8);
+  } else {// NIGHT
+    fill(255, 165, 0);
+    ellipse(0, 350, moonRadius * 2);
+    fill(3, 61, 94);
+    ellipse(0 + offset, 350, moonRadius * 1.9);
+  }
+
+  pop();
+
 }
 
 // Function of special pattern1
@@ -413,14 +475,6 @@ function drawDuelCircle(x, y, radius, delta) {
 }
 
 // Function of special pattern2
-function drawCross(x, y, horizontalLength, verticalLength, lineWidth) {
-  strokeWeight(lineWidth);
-  stroke('#ffffff');
-  line(x, y - verticalLength / 2, x, y + verticalLength / 2);
-  line(x - horizontalLength / 2, y, x + horizontalLength / 2, y);
-}
-
-// Function of special pattern3
 function drawSpecialCircle(x, y, outerRadius, innerRadius) {
   fill(75, 156, 211);
   arc(x, y, 2 * outerRadius, 2 * outerRadius, 0, PI);
@@ -432,7 +486,7 @@ function drawSpecialCircle(x, y, outerRadius, innerRadius) {
   ellipse(x, y, 2 * innerRadius, 2 * innerRadius);
 }
 
-// Function of special pattern4
+// Function of special pattern3
 function drawComplexCircle(x, y, outerRadius, middleRadius, innerRadius) {
   fill(255, 165, 0);
   ellipse(x, y, 2 * outerRadius, 2 * outerRadius);
@@ -444,11 +498,9 @@ function drawComplexCircle(x, y, outerRadius, middleRadius, innerRadius) {
 
 // Function of drawing all patterns
 function originalImage() {
-  background(3, 61, 94);
 
   let x = 512;
   let y = 512;
-
 
   // Circles in the middle
   for (let r = 390, i = 0; r >= 70; r -= 40, i++) {
@@ -462,50 +514,25 @@ function originalImage() {
   fill(0, 255, 0);
   ellipse(x, y + 30, 30, 30);
 
-  // The moon shape
-  let moonRadius = 100;
-  let offset = 45;
-  fill(255, 165, 0);
-  ellipse(500, 200, moonRadius * 2, moonRadius * 2);
-  fill(3, 61, 94);
-  ellipse(500 + offset, 200, moonRadius * 1.9, moonRadius * 1.9);
 
-  // Other special patterns
-  drawDuelCircle(550, 180, 30, 10);
-
-  drawDuelCircle(650, 300, 15, 5);
-
-  drawSpecialCircle(820, 760, 20, 15);
-
-  drawDuelCircle(500, 730, 15, 5);
-
-  drawComplexCircle(210, 790, 50, 25, 10);
-
-  drawComplexCircle(220, 550, 90, 70, 20);
-  
-  drawDuelCircle(400, 320, 30, 20);
-
-  drawSpecialCircle(160, 300, 20, 15);
-  
-  // Draw "randomCircles"
-  for (let circle of randomCircles) {
-    fill(circle.fill);
-    ellipse(...circle.pattern);
-  }
+for (i = 0; i < spectrum.length -50; i++) {//"-50" because there are only 78 circles in total
+  let x = map(spectrum[i], 0, 255, 0, 2);//how big the pattern will grow with the music
+  fill(randomCircles[i].fill);
+  ellipse(randomCircles[i].pattern[0], randomCircles[i].pattern[1], randomCircles[i].pattern[2] * x);
+}
 
 }
 
 // Fit canvas and pattern to window size
 function windowResized() {
+  clear()
+  background(3, 61, 94);
 
   size = Math.min(windowWidth, windowHeight);
   scaleFactor = Math.min(windowWidth, windowHeight) / 1024;
 
   resizeCanvas(size, size);
 
-  scale(scaleFactor);
-
-  originalImage();
+  button.position((size - button.width) / 2, size - button.height - 10);// Change the button position
 
 }
-
