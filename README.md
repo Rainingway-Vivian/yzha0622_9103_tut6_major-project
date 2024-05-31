@@ -82,7 +82,7 @@ pop();
 - Modify the call loop of **randomCircles** in the **originalImage()** function so that it can change size according to the analyzed **spectrum**.
 ```js
 for (i = 0; i < spectrum.length -50; i++) {//"-50" because there are only 78 circles in total
-  let x = map(spectrum[i], 0, 255, 0, 2);//how big the pattern will grow with the music
+  let x = map(spectrum[i], 0, 255, 0, 3);//how big the pattern will grow with the music
   fill(randomCircles[i].fill);
   ellipse(randomCircles[i].pattern[0], randomCircles[i].pattern[1], randomCircles[i].pattern[2] * x);
 }
